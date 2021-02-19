@@ -2,7 +2,10 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const bcrypt = require('bcryptjs');
 const NoAuthorizationError = require('../errors/no-auth-err');
-const { INCORRECT_EMAIL_PASSW_ERR } = require('../utils/constants');
+const {
+  INCORRECT_EMAIL_PASSW_ERR,
+  EMAIL_NOT_CORRECT_MESSAGE,
+} = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -17,7 +20,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: (v) => validator.isEmail(v),
-      message: (props) => `${props.value} is not correct email!`,
+      message: (props) => `${props.value} ${EMAIL_NOT_CORRECT_MESSAGE}`,
     },
   },
   password: {
@@ -27,7 +30,6 @@ const userSchema = new mongoose.Schema({
   },
 });
 
-// eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email }).select('+password')
     .then((user) => {

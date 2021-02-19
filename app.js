@@ -2,74 +2,36 @@ const express = require('express');
 
 // создать приложение методом express()
 const app = express();
-
-require('dotenv').config();
-
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const helmet = require('helmet');
 
-const { PORT = 3000 } = process.env;
-const { celebrate, Joi, errors } = require('celebrate');
-const usersRouter = require('./routes/users');
-const movieRouter = require('./routes/movies');
-const notFoundRouter = require('./routes/pageNotFound');
-const { createUser, login } = require('./controllers/users');
+const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const { INTERNAL_SERVER_ERROR_MESSAGE } = require('./utils/constants');
+const errorHandler = require('./middlewares/errorHandler');
+const limiter = require('./middlewares/rate-limiter');
+const routes = require('./routes');
 
-const auth = require('./middlewares/auth');
+const {
+  MONGO_DB_CONNECT,
+  PORT,
+} = require('./config.js');
 
 // подключиться к серверу mongo
-mongoose.connect('mongodb://localhost:27017/bitfilmsdb', {
+mongoose.connect(MONGO_DB_CONNECT, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
 });
 
-app.use(bodyParser.json());
-
 app.use(requestLogger); // логгер запросов
-
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-    name: Joi.string().required().min(2).max(30),
-  }),
-}), createUser);
-app.post('/signin', celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required(),
-  }),
-}), login);
-/* защитить маршруты usersRouter и movieRouter
-   от неавторизованных пользователей, при помощи
-   авторизационного мидлвэра auth
-*/
-
-app.use('/users', auth, usersRouter);
-app.use('/movies', auth, movieRouter);
-app.use('/', notFoundRouter);
-
+app.use(limiter); // ограничить количество запросов с одного IP-адреса в единицу времени
+app.use(helmet()); // проставить автоматически заголовки безопасности
+app.use(bodyParser.json());
+app.use(routes);
 app.use(errorLogger); // логгер ошибок
-
-// обработчик ошибок celebrate
-app.use(errors());
-
-// мидлвэр для централизованной обработки ошибок
-app.use((err, req, res, next) => {
-  // res.status(err.statusCode).send({ message: err.message });
-  const { statusCode = 500, message } = err;
-  res
-    .status(statusCode)
-    .send({
-      message: statusCode === 500
-        ? INTERNAL_SERVER_ERROR_MESSAGE
-        : message,
-    });
-  next();
-});
+app.use(errors()); // обработчик ошибок celebrate
+app.use(errorHandler); // централизованный обработчик ошибок
 
 app.listen(PORT, () => {
 });

@@ -4,12 +4,17 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const NotFoundError = require('../errors/not-found-err');
 const BadRequestError = require('../errors/bad-request-err');
+const ClientError = require('../errors/client-err');
 
-const { JWT_SECRET, NODE_ENV } = process.env;
+const {
+  JWT_SECRET: secret,
+  NODE_ENV,
+  JWT_SECRET,
+} = require('../config.js');
+
 const {
   USER_NOT_FOUND,
   VALIDATION_ERROR_MESSAGE,
-  ERROR_CODE_NOT_FOUND,
 } = require('../utils/constants');
 
 function getUserInfo(req, res, next) {
@@ -54,9 +59,6 @@ function updateUserInfo(req, res, next) {
       if (err.name === 'ValidationError') {
         return next(new BadRequestError(VALIDATION_ERROR_MESSAGE));
       }
-      if (err.statusCode === ERROR_CODE_NOT_FOUND) {
-        return next(err);
-      }
       return next(err);
     });
 }
@@ -77,9 +79,7 @@ function createUser(req, res, next) {
     }))
     .catch((err) => {
       if (err.name === 'MongoError') {
-        const e = new Error(err.message);
-        e.statusCode = 409;
-        return next(e);
+        return next(new ClientError(err.message));
       }
       if (err.name === 'ValidationError') {
         return next(new BadRequestError(err.message));
@@ -95,7 +95,7 @@ function login(req, res, next) {
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        NODE_ENV === 'production' ? JWT_SECRET : secret,
         { expiresIn: '7d' },
       );
       res.send({ token });

@@ -1,16 +1,14 @@
 const Movie = require('../models/movie');
 const BadRequestError = require('../errors/bad-request-err');
+const NotFoundError = require('../errors/not-found-err');
+const ForbiddenError = require('../errors/forbidden-err');
 const {
   VALIDATION_ERROR_MESSAGE,
   MOVIE_EXISTED_ERR,
   MOVIE_NOT_FOUND_ERR,
-  NO_AUTHORIZATION_ERROR_MESSAGE,
+  NO_AUTHORITY_ERROR_MESSAGE,
   INVALID_MOVIE_ID_ERR,
-  ERROR_CODE_NOT_FOUND,
-  ERROR_CODE_NO_AUTHORIZATION,
 } = require('../utils/constants');
-const NotFoundError = require('../errors/not-found-err');
-const NoAuthorizationError = require('../errors/no-auth-err');
 
 function getMovies(req, res, next) {
   return Movie.find({})
@@ -78,17 +76,11 @@ function deleteMovie(req, res, next) {
         return Movie.deleteOne({ _id: movieId })
           .then((deleted) => res.status(200).send(deleted));
       }
-      return Promise.reject(new NoAuthorizationError(NO_AUTHORIZATION_ERROR_MESSAGE));
+      return Promise.reject(new ForbiddenError(NO_AUTHORITY_ERROR_MESSAGE));
     })
     .catch((err) => {
       if (err.name === 'CastError') {
         return next(new BadRequestError(INVALID_MOVIE_ID_ERR));
-      }
-      if (err.statusCode === ERROR_CODE_NOT_FOUND) {
-        return next(err);
-      }
-      if (err.statusCode === ERROR_CODE_NO_AUTHORIZATION) {
-        return next(err);
       }
       return next(err);
     });
