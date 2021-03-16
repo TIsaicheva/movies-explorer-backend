@@ -27,7 +27,7 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  // credentials: true,
+  credentials: true,
 };
 
 // подключиться к серверу mongo
