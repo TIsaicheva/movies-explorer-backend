@@ -41,7 +41,6 @@ app.use(requestLogger); // логгер запросов
 
 app.use(cors({
   origin: 'http://tisaichdiplom.students.nomoredomains.icu',
-  credentials: true,
 }));
 
 app.use(limiter); // ограничить количество запросов с одного IP-адреса в единицу времени
