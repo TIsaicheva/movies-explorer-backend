@@ -18,7 +18,7 @@ const {
   PORT,
 } = require('./config.js');
 
-const whitelist = ['https://tisaichdiplom.students.nomoredomains.icu', 'http://tisaichdiplom.students.nomoredomains.icu'];
+const whitelist = ['http://localhost:3001', 'https://tisaichdiplom.students.nomoredomains.icu', 'http://tisaichdiplom.students.nomoredomains.icu'];
 const corsOptions = {
   origin(origin, callback) {
     if (whitelist.indexOf(origin) !== -1) {
@@ -38,7 +38,9 @@ mongoose.connect(MONGO_DB_CONNECT, {
 });
 
 app.use(requestLogger); // логгер запросов
+
 app.use(cors(corsOptions));
+
 app.use(limiter); // ограничить количество запросов с одного IP-адреса в единицу времени
 app.use(helmet()); // проставить автоматически заголовки безопасности
 app.use(bodyParser.json());
