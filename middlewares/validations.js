@@ -19,8 +19,13 @@ const validateAuthentication = celebrate({
 
 const validateUserUpdatingBody = celebrate({
   body: Joi.object().keys({
-    email: Joi.string().email(),
-    name: Joi.string().min(2).max(30),
+    email: Joi.string().email().messages({
+      'string.email': 'В поля "email" должен быть валидный email',
+    }),
+    name: Joi.string().min(2).max(30).messages({
+      'string.min': 'Минимальная длина поля "name" - 2',
+      'string.max': 'Максимальная длина поля "name" - 30',
+    }),
   }),
 });
 

@@ -5,6 +5,7 @@ const app = express();
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const helmet = require('helmet');
+const cors = require('cors');
 
 const { errors } = require('celebrate');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
@@ -25,6 +26,10 @@ mongoose.connect(MONGO_DB_CONNECT, {
 });
 
 app.use(requestLogger); // логгер запросов
+app.use(cors({
+  origin: 'https://tisaichdiplom.students.nomoredomains.icu',
+  credentials: true,
+}));
 app.use(limiter); // ограничить количество запросов с одного IP-адреса в единицу времени
 app.use(helmet()); // проставить автоматически заголовки безопасности
 app.use(bodyParser.json());
