@@ -20,7 +20,7 @@ const {
 
 const whitelist = ['http://localhost:3001', 'https://tisaichdiplom.students.nomoredomains.icu', 'http://tisaichdiplom.students.nomoredomains.icu'];
 const corsOptions = {
-  origin(origin, callback) {
+  origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1) {
       callback(null, true);
     } else {
