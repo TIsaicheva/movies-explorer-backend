@@ -40,7 +40,7 @@ mongoose.connect(MONGO_DB_CONNECT, {
 app.use(requestLogger); // логгер запросов
 
 app.use(cors({
-  origin: 'https://tisaichdiplom.students.nomoredomains.icu',
+  origin: 'https://tisaichdiplom.students.nomoredomains.icu', // 'http://localhost:3001',
   credentials: true,
 }));
 
